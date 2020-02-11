@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { DatePipe } from '@angular/common';
 import Chart from 'chart.js';
 
 
 @Component({
     selector: 'dashboard-cmp',
     moduleId: module.id,
-    templateUrl: 'dashboard.component.html'
+    templateUrl: 'dashboard.component.html',
+    providers: [DatePipe]
 })
 
 export class DashboardComponent implements OnInit {
@@ -22,7 +23,7 @@ export class DashboardComponent implements OnInit {
     public datesArr: string[] = [];
     public confirmedArr: number[] = [];
 
-    constructor(private http: HttpClient) {
+    constructor(private http: HttpClient, private datePipe: DatePipe) {
 
 
     }
@@ -36,10 +37,32 @@ export class DashboardComponent implements OnInit {
             console.log(data);
             //break into dates
             var history = data["history"];
-            Object.keys(history).forEach((key) => {
-                this.datesArr.push(key.split(" ")[0]);
-                this.confirmedArr.push(history[key]);                
+            Object.keys(history).forEach((key, index) => {
+                //expecting format like "<date> <time>"
+                var date = this.datePipe.transform(key.split(" ")[0], 'dd-MMM');
+                var todayData:number = history[key] | 0;
+
+                //merge duplicate dates
+                if(index == 0) {
+                    this.datesArr.push(date);
+                    this.confirmedArr.push(todayData);     
+                } else {
+                    var yesterday = this.datesArr.pop();
+                    //merge duplicate date and data
+                    if(date === yesterday) {
+                        //add the value to yesterday's confirmedArr
+                        var ytdData = this.confirmedArr.pop();
+                        this.confirmedArr.push(todayData);
+                        this.datesArr.push(date);
+                    } else {
+                        this.datesArr.push(yesterday); //add the popped date back
+                        this.datesArr.push(date);
+                        this.confirmedArr.push(todayData);  
+                    }
+                }       
             });
+            console.log(this.confirmedArr);
+            console.log(this.datesArr);
             console.log("generate graph");
             this.generateGraph(this.datesArr, this.confirmedArr);
         });
