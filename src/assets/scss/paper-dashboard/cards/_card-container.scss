@@ -1,6 +1,15 @@
-.container {
+.card-body {
+
     &--news {
-        max-height:460px;
-        overflow:scroll;
+        height:480px;
     }
+
+    .container {
+        &--news {
+            max-height:460px;
+            overflow-y:scroll;
+            overflow-x:hidden;
+        }
+    }
+
 }

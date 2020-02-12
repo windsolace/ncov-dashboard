@@ -23,6 +23,13 @@ export class DashboardComponent implements OnInit {
     public datesArr: string[] = [];
     public confirmedArr: number[] = [];
     public latestNewsArr: any = [];
+    public current:any = {
+        "confirmed":0,
+        "deaths":0,
+        "recovered":0,
+        "date":"-",
+        "time":"-"
+    }
 
     constructor(private http: HttpClient, private datePipe: DatePipe) {
 
@@ -30,6 +37,9 @@ export class DashboardComponent implements OnInit {
     }
 
     ngOnInit() {
+
+        //get current
+        this.getCurrent();
 
         //get historical data
         this.getHistory();
@@ -41,12 +51,30 @@ export class DashboardComponent implements OnInit {
         });
     }
 
-    getHistory() {
-        this.http.get("./assets/json/history-sg.json").subscribe(data => {
-            this.historicalRaw = data;
+    getCurrent() {
+        //./assets/json/current-sg.json
+        this.http.get("https://covid2019-api.herokuapp.com/country/sg").subscribe(data => {
+            var currentSg = data["Singapore"];
+            this.current["confirmed"] = currentSg["confirmed"];
+            this.current["recovered"] = currentSg["recovered"];
+            this.current["deaths"] = currentSg["deaths"];
+            var datetime = data["dt"];
+            var datetimeArr = datetime.split(" ");
+            var date = datetimeArr[0];
+            var time = datetimeArr[1];
+            this.current["date"] = this.datePipe.transform(date, 'dd MMM yyyy');
+            this.current["time"] = time;
+            
+        });
+    }
 
+    getHistory() {
+        //./assets/json/history-sg.json
+        this.http.get("https://coronavirus-tracker-api.herokuapp.com/confirmed").subscribe(data => {
+            let sgData = data["locations"].find(item => item.country === "Singapore");
+            this.historicalRaw = sgData["history"];
             //break into dates
-            var history = data["history"];
+            var history = sgData["history"];
             Object.keys(history).forEach((key, index) => {
                 //expecting format like "<date> <time>"
                 var date = this.datePipe.transform(key.split(" ")[0], 'dd-MMM');
@@ -86,10 +114,10 @@ export class DashboardComponent implements OnInit {
             fill: false,
             borderColor: '#fbc658',
             backgroundColor: 'transparent',
-            pointBorderColor: '#fbc658',
-            pointRadius: 4,
-            pointHoverRadius: 4,
-            pointBorderWidth: 8,
+            // pointBorderColor: '#fbc658',
+            // pointRadius: 2,
+            // pointHoverRadius: 16,
+            // pointBorderWidth: 8,
         };
 
         var speedData = {
