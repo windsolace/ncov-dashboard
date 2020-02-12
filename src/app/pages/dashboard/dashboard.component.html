@@ -38,7 +38,7 @@
                     </div>
                     <div class="col-7 col-md-8">
                         <div class="numbers">
-                            <p class="card-category">Confirmed Cases</p>
+                            <p class="card-category"><a href="https://sgwuhan.xose.net/">Confirmed</a></p>
                             <p class="card-title">45
                                 <p>
                         </div>
@@ -110,11 +110,26 @@
     <div class="col-md-6">
         <div class="card card-chart">
             <div class="card-header">
-                <h5 class="card-title">Confirmed Cases</h5>
-                <p class="card-category">SG</p>
+                <h5 class="card-title">Headlines</h5>
+                <!-- <p class="card-category">SG</p> -->
             </div>
             <div class="card-body">
-                <canvas id="speedChart" width="400" height="250"></canvas>
+                <div class="container--news">
+                    <div *ngFor="let news of latestNewsArr">
+                        <blockquote>
+                            <a href="{{news.url}}">
+                                <p class="blockquote blockquote-primary">
+                                {{news.title}}
+                                <br>
+                                <br>
+                                <small>
+                                    - {{news.source.name}}
+                                </small>
+                                </p>
+                            </a>
+                        </blockquote>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -125,13 +140,27 @@
                 <!-- <p class="card-category">#sgfrontlinewarriors</p> -->
             </div>
             <div class="card-body ">
-                <iframe allowfullscreen id="wallsio-iframe" src="https://walls.io/k4p8b?nobackground=1&amp;show_header=0" style="border:0;height:360px;width:100%" title="My social wall"></iframe>            <div class="card-footer ">
-                <hr>
-                <div class="stats">
-                    <i class="fa fa-history"></i> Updated 3 minutes ago
+                <iframe allowfullscreen id="wallsio-iframe" src="https://walls.io/k4p8b?nobackground=1&amp;show_header=0" style="border:0;height:360px;width:100%" title="My social wall"></iframe>           
+                <div class="card-footer ">
+                    <hr>
+                    <div class="stats">
+                        <i class="fa fa-history"></i> Updated 3 minutes ago
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-chart">
+            <div class="card-header">
+                <h5 class="card-title">Confirmed Cases - SG</h5>
+                <!-- <p class="card-category">SG</p> -->
+            </div>
+            <div class="card-body">
+                <canvas id="speedChart" width="400" height="250"></canvas>
+            </div>
+        </div>
+    </div>
 </div>

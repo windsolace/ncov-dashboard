@@ -22,6 +22,7 @@ export class DashboardComponent implements OnInit {
     public historicalRaw: any;
     public datesArr: string[] = [];
     public confirmedArr: number[] = [];
+    public latestNewsArr: any = [];
 
     constructor(private http: HttpClient, private datePipe: DatePipe) {
 
@@ -30,11 +31,20 @@ export class DashboardComponent implements OnInit {
 
     ngOnInit() {
 
-        //
         //get historical data
+        this.getHistory();
+        
+        //get news
+        this.http.get("/.netlify/functions/news").subscribe(data => {
+            console.log(data);
+            this.latestNewsArr = data["articles"];
+        });
+    }
+
+    getHistory() {
         this.http.get("./assets/json/history-sg.json").subscribe(data => {
             this.historicalRaw = data;
-            console.log(data);
+
             //break into dates
             var history = data["history"];
             Object.keys(history).forEach((key, index) => {
@@ -61,9 +71,7 @@ export class DashboardComponent implements OnInit {
                     }
                 }       
             });
-            console.log(this.confirmedArr);
-            console.log(this.datesArr);
-            console.log("generate graph");
+
             this.generateGraph(this.datesArr, this.confirmedArr);
         });
     }
