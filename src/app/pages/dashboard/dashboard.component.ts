@@ -19,16 +19,17 @@ export class DashboardComponent implements OnInit {
     public chartEmail;
     public chartHours;
 
-    public historicalRaw: any;
+    //historical
     public datesArr: string[] = [];
-    public confirmedArr: number[] = [];
+    public confirmedHistoryArr: number[] = [];
+    public recoveredHistoryArr: number[] = [];
+
     public latestNewsArr: any = [];
     public current:any = {
         "confirmed":0,
         "deaths":0,
         "recovered":0,
-        "date":"-",
-        "time":"-"
+        "date":"-"
     }
 
     constructor(private http: HttpClient, private datePipe: DatePipe) {
@@ -56,13 +57,12 @@ export class DashboardComponent implements OnInit {
             this.getCurrent(sgConfirmedData, sgRecoveredData, sgDeathsData);
 
             //get historical data
-            this.getHistory(sgConfirmedData);
+            this.getHistory(sgConfirmedData, sgRecoveredData);
 
         });
 
         //get news
         this.http.get("/.netlify/functions/news").subscribe(data => {
-            console.log(data);
             this.latestNewsArr = data["articles"];
         });
     }
@@ -92,58 +92,69 @@ export class DashboardComponent implements OnInit {
      * Get historical updates of confirmed cases 
      * @param confirmed 
      */
-    getHistory(confirmed) {
+    getHistory(confirmed, recovered) {
         //./assets/json/history-sg.json
-        this.historicalRaw = confirmed["history"];
-        //break into dates
-        var history = confirmed["history"];
-        Object.keys(history).forEach((key, index) => {
-            //expecting format like "<date> <time>"
-            var date = this.datePipe.transform(key.split(" ")[0], 'dd-MMM');
-            var todayData:number = history[key] | 0;
 
-            //merge duplicate dates
-            if(index == 0) {
-                this.datesArr.push(date);
-                this.confirmedArr.push(todayData);     
-            } else {
-                var yesterday = this.datesArr.pop();
-                //merge duplicate date and data
-                if(date === yesterday) {
-                    //add the value to yesterday's confirmedArr
-                    var ytdData = this.confirmedArr.pop();
-                    this.confirmedArr.push(todayData);
-                    this.datesArr.push(date);
-                } else {
-                    this.datesArr.push(yesterday); //add the popped date back
-                    this.datesArr.push(date);
-                    this.confirmedArr.push(todayData);  
-                }
-            }       
-        });
+        var confirmedHistory = confirmed["history"];
+        var recoveredHistory = recovered["history"];
+        this.formatHistoricalData(confirmedHistory,recoveredHistory);
+        this.generateGraph(this.datesArr, this.confirmedHistoryArr, this.recoveredHistoryArr);
 
-        this.generateGraph(this.datesArr, this.confirmedArr);
+        var latestDate = this.datesArr[this.datesArr.length-1] + new Date().getFullYear();
+        this.current['date'] = this.datePipe.transform(latestDate, 'dd MMM yyyy');
+
     }
 
-    generateGraph(xaxis,inputData) {
+    /**
+     * Populates arr with formatted data to feed into graph
+     * - known issue on 16th Feb that confirmed array's date is not sorted correctly
+     * - assumes recovered array has correctly sorted date
+     * - assumes confirmed and recovered arrays have same lengths
+     * - uses dates from recovered array
+     * @param confirmed 
+     * @param recovered 
+     */
+    formatHistoricalData(confirmed, recovered) {
+        Object.keys(recovered).forEach((key, index) => {
+
+            //expecting key format like M/dd/yy
+            var date = this.datePipe.transform(key, 'dd-MMM');
+
+            this.datesArr.push(date)
+            this.recoveredHistoryArr.push(recovered[key]); 
+            this.confirmedHistoryArr.push(confirmed[this.datePipe.transform(key, 'M/d/yy')]); //inconsistent format provided by API, change '1/01/20' to '1/1/20'
+
+        });
+    }
+
+    generateGraph(xaxis,confirmedData, recoveredData) {
         this.chartColor = "#FFFFFF";
         
         var speedCanvas = document.getElementById("speedChart");
 
         var dataFirst = {
-            data: inputData,
+            label:'Confirmed',
+            data: confirmedData,
             fill: false,
             borderColor: '#fbc658',
-            backgroundColor: 'transparent',
+            // backgroundColor: 'rgba(251,198,88,0.5)'
             // pointBorderColor: '#fbc658',
             // pointRadius: 2,
             // pointHoverRadius: 16,
             // pointBorderWidth: 8,
         };
 
+        var dataRecovered = {
+            label:'Recovered',
+            data: recoveredData,
+            fill: false,
+            borderColor: '#6bd098',
+            // backgroundColor: 'rgba(107,208,152,0.9)'
+        }
+
         var speedData = {
             labels: xaxis,
-            datasets: [dataFirst]
+            datasets: [dataFirst,dataRecovered]
         };
 
         var chartOptions = {
@@ -154,7 +165,7 @@ export class DashboardComponent implements OnInit {
                 animationDuration: 0
             },
             legend: {
-                display: false,
+                display: true,
                 position: 'top'
             }
         };
