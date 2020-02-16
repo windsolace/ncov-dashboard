@@ -6,7 +6,7 @@
         <img src="assets/img/angular2-logo.png">
       </div>
     </a> -->
-    <a href="https://www.creative-tim.com" class="simple-text logo-normal">
+    <a target="_blank" href="https://www.creative-tim.com" class="simple-text logo-normal">
       nCoV19 tracker
     </a>
   </div>
@@ -16,7 +16,7 @@
                 <i class="nc-icon {{menuItem.icon}}"></i>
                 <p>{{menuItem.title}}</p>
             </a>
-            <a *ngIf="menuItem.isExternal" href="{{menuItem.path}}">
+            <a *ngIf="menuItem.isExternal" target="_blank" href="{{menuItem.path}}">
               <i class="nc-icon {{menuItem.icon}}"></i>
               <p>{{menuItem.title}}</p>
           </a>
