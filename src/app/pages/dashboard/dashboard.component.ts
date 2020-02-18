@@ -115,15 +115,23 @@ export class DashboardComponent implements OnInit {
      * @param recovered 
      */
     formatHistoricalData(confirmed, recovered) {
+        var tempDateArr = [];
         Object.keys(recovered).forEach((key, index) => {
+            tempDateArr.push(new Date(key));
+        });
 
-            //expecting key format like M/dd/yy
-            var date = this.datePipe.transform(key, 'dd-MMM');
+        //sort date objects in ascending order
+        tempDateArr.sort((v1,v2)=> {
+            return (v1 > v2) ? 1 : -1;
+        });
 
-            this.datesArr.push(date)
-            this.recoveredHistoryArr.push(recovered[key]); 
-            this.confirmedHistoryArr.push(confirmed[this.datePipe.transform(key, 'M/d/yy')]); //inconsistent format provided by API, change '1/01/20' to '1/1/20'
-
+        //populate data based on sorted date array
+        tempDateArr.forEach((longDate, i) => {
+            var graphDate = this.datePipe.transform(longDate, 'dd-MMM');
+            this.datesArr.push(graphDate);
+            var dataDate = this.datePipe.transform(longDate, 'M/d/yy'); //API data maintaining M/d/yy as key to each data point
+            this.recoveredHistoryArr.push(recovered[dataDate]); 
+            this.confirmedHistoryArr.push(confirmed[dataDate]); 
         });
     }
 
