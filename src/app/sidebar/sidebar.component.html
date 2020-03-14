@@ -12,11 +12,11 @@
   </div>
     <ul class="nav">
         <li *ngFor="let menuItem of menuItems" routerLinkActive="active" class="{{menuItem.class}}">
-            <a *ngIf="!menuItem.isExternal" [routerLink]="[menuItem.path]">
+            <a *ngIf="!menuItem.isExternal" [routerLink]="[menuItem.path]" class="nav__item">
                 <i class="nc-icon {{menuItem.icon}}"></i>
                 <p>{{menuItem.title}}</p>
             </a>
-            <a *ngIf="menuItem.isExternal" target="_blank" href="{{menuItem.path}}">
+            <a *ngIf="menuItem.isExternal" target="_blank" href="{{menuItem.path}}" class="nav__item">
               <i class="nc-icon {{menuItem.icon}}"></i>
               <p>{{menuItem.title}}</p>
           </a>
